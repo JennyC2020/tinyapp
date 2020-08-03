@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/JennyC2020/tinyapp/issues"
   },
-  "homepage": "https://github.com/JennyC2020/tinyapp#readme"
+  "homepage": "https://github.com/JennyC2020/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
