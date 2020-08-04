@@ -7,9 +7,8 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
 function generateRandomString() {
-  return Math.random().toString(34).substr(3, 6);
+  return Math.random().toString(36).substr(2, 6);
 }
 
 const urlDatabase = {
@@ -25,7 +24,6 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  // console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
   app.get("/urls/:shortURL", (req, res) => {
     let shortURL = req.params.shortURL;
@@ -35,11 +33,9 @@ app.post("/urls", (req, res) => {
   });
 });
 
-
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-
 
 app.get("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
@@ -53,17 +49,17 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
