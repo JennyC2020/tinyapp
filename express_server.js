@@ -94,7 +94,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   urlDatabase[shortURL] = req.body.newURL;
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect('/urls/' + shortURL);
 });
 
 // LISTEN requests
