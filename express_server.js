@@ -24,6 +24,12 @@ const urlDatabase = {
 
 //GET requests
 
+app.get("/register", (req, res) => {
+  let templateVars = { urls: urlDatabase, username: req.cookies["username"], };
+  res.render("register", templateVars);
+});
+
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
