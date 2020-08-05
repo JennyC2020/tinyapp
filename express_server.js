@@ -24,12 +24,14 @@ const urlDatabase = {
 //GET requests
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase, username: req.cookies.username };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+  let templateVars = { urls: urlDatabase, username: req.cookies.username };
+  res.render('urls_new', templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -67,7 +69,7 @@ app.post("/urls", (req, res) => {
   app.get("/urls/:shortURL", (req, res) => {
     let shortURL = req.params.shortURL;
     let longURL = urlDatabase[req.params.shortURL];
-    let templateVars = { shortURL, longURL };
+    let templateVars = { shortURL, longURL, username: req.cookies.username };
     res.render("urls_show", templateVars);
   });
 });
