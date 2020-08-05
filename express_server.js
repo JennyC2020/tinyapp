@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const { response } = require('express');
 //const { response } = require("express");
 const PORT = 8080; // default port 8080
 
@@ -21,6 +22,9 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+
+
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -64,10 +68,8 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = {
-    username: req.cookies["username"],
-    urls: urlDatabase
-  };
+  const user = users[req.cookies.user_id];
+  let templateVars = { user, urls: urlDatabase, username: req.cookies.user_id };
   res.render("urls_index", templateVars);
 });
 
@@ -80,6 +82,18 @@ app.get("/urls.json", (req, res) => {
 });
 
 // POST requests
+
+app.post("/register", (req, res) => {
+  const password = req.body.password;
+  const email = req.body.email;
+  const id = generateRandomString();
+  users[id] = { id, email, password };
+  //console.log('new user', users[id]);
+  res.cookie('user_id', id);
+  //console.log('all users', users);
+  res.redirect('/urls');
+});
+
 
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
