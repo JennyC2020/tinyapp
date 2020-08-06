@@ -22,10 +22,17 @@ function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
 }
 
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
+const urlsForUser = (id) => {
+  let result = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      console.log(id)
+      result[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return result;
+
+};
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
@@ -36,17 +43,6 @@ const urlDatabase = {
 
 const users = {};
 
-const urlsForUser = (id) => {
-  let result = {};
-  for (let user in urlDatabase) {
-    if (urlDatabase[user].userID === id) {
-      console.log(jennyc)
-      result[user] = urlDatabase[user];
-    }
-  }
-  return result;
-
-};
 //GET requests
 
 app.get("/register", (req, res) => {
@@ -85,7 +81,9 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const user = users[req.cookies.user_id];
-  let templateVars = { user, urls: urlDatabase };
+  const userURLS = urlsForUser(req.cookies.user_id)
+  console.log("This is userURLS: ", userURLS);
+  let templateVars = { user, urls: userURLS };
   res.render("urls_index", templateVars);
 });
 
@@ -149,13 +147,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.cookies["user_id"] };
   res.redirect('/urls/' + shortURL);
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.newURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect('/urls/' + shortURL);
 });
 
