@@ -13,9 +13,11 @@
       </div>
     </div>
     <% if (!user) { %>
-    <form class="form-inline my-2 my-lg-0" method=POST action="/login">
-      <input class="form-control mr-sm-2" type="text" name="username" placeholder="Username"></input>
-      <button class="btn btn-outline-dark" type="submit">Login</button>
+    <form class="form-inline my-2 my-lg-0" method=GET action="/login">
+      <button class="btn btn-light" type="submit" style="margin: 5px 5px;">Login</button>
+    </form>
+    <form class="form-inline my-2 my-lg-0" method=GET action="/register">
+      <button class="btn btn-light" type="submit" style="margin: 5px 25px;">Register</button>
     </form>
     <% } else { %>
     <form class="form-inline my-2 my-lg-0" method=POST action="/logout">
