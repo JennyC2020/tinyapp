@@ -13,6 +13,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
+const findUserByEmail = (email) => {
+  const foundKeys = Object.keys(users).filter((key) => users[key].email === email);
+  return foundKeys.length > 0 ? foundKeys[0] : null;
+};
 
 function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
@@ -98,9 +102,20 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("/urls");
-})
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = users[findUserByEmail(email)];
+  if (!user) {
+    res.statusCode = 403;
+    res.send('403: email address does not match any existing user');
+  } else if (password !== user.password) {
+    res.statusCode = 403;
+    res.send('403: password incorrect');
+  } else {
+    res.cookie('user_id', user.id);
+    res.redirect('/urls');
+  }
+});
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
