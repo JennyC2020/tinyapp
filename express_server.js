@@ -26,7 +26,6 @@ const urlsForUser = (id) => {
   let result = {};
   for (let shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === id) {
-      console.log(id)
       result[shortURL] = urlDatabase[shortURL];
     }
   }
@@ -82,7 +81,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/urls", (req, res) => {
   const user = users[req.cookies.user_id];
   const userURLS = urlsForUser(req.cookies.user_id)
-  console.log("This is userURLS: ", userURLS);
+  //console.log("This is userURLS: ", userURLS);
   let templateVars = { user, urls: userURLS };
   res.render("urls_index", templateVars);
 });
@@ -141,8 +140,14 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  if (req.cookies.user_id && req.cookies.user_id === urlDatabase[shortURL].userID) {
+    delete (urlDatabase[shortURL]);
+    res.redirect('/urls');
+  } else {
+    res.statusCode = 401;
+    res.clearCookie('user_id');
+    res.send("401 Error. Unauthorized. Please login.");
+  }
 });
 
 app.post("/urls", (req, res) => {
