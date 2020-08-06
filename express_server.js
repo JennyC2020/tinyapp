@@ -29,7 +29,9 @@ function generateRandomString() {
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" },
+  b6Utgg: { longURL: "https://www.tsn.ca", userID: "jennyc" },
+  i3Bgrr: { longURL: "https://www.google.ca", userID: "jennyc" }
 };
 
 const users = {};
@@ -38,13 +40,13 @@ const urlsForUser = (id) => {
   let result = {};
   for (let user in urlDatabase) {
     if (urlDatabase[user].userID === id) {
+      console.log(jennyc)
       result[user] = urlDatabase[user];
     }
   }
   return result;
 
 };
-
 //GET requests
 
 app.get("/register", (req, res) => {
@@ -61,8 +63,7 @@ app.get('/login', (req, res) => {
 
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  res.redirect(urlDatabase[req.params.shortURL]);
 });
 
 app.get("/urls/new", (req, res) => {
