@@ -22,14 +22,28 @@ function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
 }
 
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
-
-
 const users = {};
+
+const urlsForUser = (id) => {
+  let result = {};
+  for (let user in urlDatabase) {
+    if (urlDatabase[user].userID === id) {
+      result[user] = urlDatabase[user];
+    }
+  }
+  return result;
+
+};
 
 //GET requests
 
