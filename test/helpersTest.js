@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 
-const { findUserByEmail } = require('../helper');
+const { findUserByEmail, generateRandomString } = require('../helper');
 
 const testUsers = {
   "userRandomID": {
@@ -11,9 +11,16 @@ const testUsers = {
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: "street-funk"
+  },
+  "user3RandomID": {
+    id: "user3RandomID",
+    email: "user3@example.com",
+    password: "life-under-water"
   }
 };
+
+
 
 describe('findUserByEmail', () => {
   it('should return a user with valid email', () => {
@@ -26,5 +33,14 @@ describe('findUserByEmail', () => {
   it('should return undefined if no user found with given email', () => {
     const user = findUserByEmail(testUsers, "no_a_user@example.com");
     assert.isUndefined(user);
+  });
+});
+
+
+
+describe('generateRandomString', function() {
+  it('should return a 6 letter string', function() {
+    const urlId = generateRandomString()
+    assert.equal(urlId.length, 6);
   });
 });
