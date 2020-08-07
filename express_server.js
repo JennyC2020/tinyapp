@@ -1,41 +1,19 @@
-//const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
 const { response } = require('express');
 const bcrypt = require('bcrypt');
+const PORT = 8080;
 
-const PORT = 8080; // default port 8080
-
-const { findUserByEmail } = require('./helper');
-
-//set the view engine to ejs
+const { findUserByEmail, urlsForUser, generateRandomString } = require('./helper');
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
-//app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', "key2"]
 }));
-
-
-function generateRandomString() {
-  return Math.random().toString(36).substr(2, 6);
-}
-
-const urlsForUser = (id) => {
-  let result = {};
-  const keys = Object.keys(urlDatabase)
-  for (let shortURL of keys) {
-    if (urlDatabase[shortURL].userID === id) {
-      result[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return result;
-
-};
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
@@ -53,7 +31,6 @@ const userDatabase = {
       '$2b$10$dag07KP6ynxWmyM/XCxmAedNcReezbfOdj7g8s3pdC/xyd0iKqyia'
   }
 };
-
 
 
 //GET requests
@@ -77,7 +54,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const user = userDatabase[req.session.user_id];
-  let templateVars = { user }; // console.log(req); 
+  let templateVars = { user };
   if ((req.session.user_id === null) || (req.session.user_id === undefined)) {
     res.redirect('/login')
   } else {
@@ -96,7 +73,6 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/urls", (req, res) => {
   const user = userDatabase[req.session.user_id];
   const userURLS = urlsForUser(req.session.user_id)
-  //console.log("This is userURLS: ", userURLS);
   let templateVars = { user, urls: userURLS };
   res.render("urls_index", templateVars);
 });
@@ -120,7 +96,7 @@ app.post("/register", (req, res) => {
     res.send('403: email or password missing');
     return;
   }
-  // console.log("Email is:", email);
+
   const user = findUserByEmail(userDatabase, email);
   if (user) {
     res.statusCode = 400;
@@ -155,7 +131,6 @@ app.post("/login", (req, res) => {
   }
 
   const user = findUserByEmail(userDatabase, email);
-  //console.log(user);
   if (!user) {
     res.statusCode = 403;
     res.send('403: email address does not match any existing user');
@@ -169,8 +144,6 @@ app.post("/login", (req, res) => {
 
     return;
   }
-
-
   req.session.user_id = user.id;
   res.redirect('/urls');
 
@@ -180,6 +153,7 @@ app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect('/login');
 });
+
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (req.session.user_id && req.session.user_id === urlDatabase[shortURL].userID) {
