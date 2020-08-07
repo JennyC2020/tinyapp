@@ -185,8 +185,8 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
-  res.redirect('/urls');
+  req.session = null;
+  res.redirect('/login');
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
