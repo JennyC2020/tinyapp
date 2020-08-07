@@ -8,6 +8,8 @@ const bcrypt = require('bcrypt');
 
 const PORT = 8080; // default port 8080
 
+const { findUserByEmail } = require('./helper');
+
 //set the view engine to ejs
 
 app.set("view engine", "ejs");
@@ -18,29 +20,6 @@ app.use(cookieSession({
   keys: ['key1', "key2"]
 }));
 
-
-// const findUserByEmail = (email) => {
-
-//   const keys = Object.keys(userDatabase)
-//   for (let id of keys) {
-//     const user = userDatabase[id];
-//     if (user.email === email) {
-//       return user;
-//     }
-//   }
-// };
-
-const findUserByEmail = (database, email) => {
-
-  const keys = Object.keys(database)
-  for (let id of keys) {
-    const user = database[id];
-    if (user.email === email) {
-      console.log(user)
-      return user;
-    }
-  }
-};
 
 function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
