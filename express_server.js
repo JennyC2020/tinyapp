@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const { response } = require('express');
+const bcrypt = require('bcrypt');
 //const { response } = require("express");
 const PORT = 8080; // default port 8080
 
@@ -14,8 +15,14 @@ app.use(cookieParser());
 
 
 const findUserByEmail = (email) => {
-  const foundKeys = Object.keys(users).filter((key) => users[key].email === email);
-  return foundKeys.length > 0 ? foundKeys[0] : null;
+
+  const keys = Object.keys(users)
+  for (let id of keys) {
+    const user = users[id];
+    if (user.email === email) {
+      return user;
+    }
+  }
 };
 
 function generateRandomString() {
@@ -24,7 +31,8 @@ function generateRandomString() {
 
 const urlsForUser = (id) => {
   let result = {};
-  for (let shortURL in urlDatabase) {
+  const keys = Object.keys(urlDatabase)
+  for (let shortURL of keys) {
     if (urlDatabase[shortURL].userID === id) {
       result[shortURL] = urlDatabase[shortURL];
     }
@@ -40,7 +48,17 @@ const urlDatabase = {
   i3Bgrr: { longURL: "https://www.google.ca", userID: "jennyc" }
 };
 
-const users = {};
+const users = {
+  xnidg9:
+  {
+    id: 'xnidg9',
+    email: 'jenny@canada.com',
+    password:
+      '$2b$10$dag07KP6ynxWmyM/XCxmAedNcReezbfOdj7g8s3pdC/xyd0iKqyia'
+  }
+};
+
+
 
 //GET requests
 
@@ -73,8 +91,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[req.params.shortURL];
   const user = users[req.cookies.user_id];
-  let templateVars = { user, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { user, shortURL, longURL };
   res.render("urls_show", templateVars);
 });
 
@@ -99,15 +119,27 @@ app.get("/urls.json", (req, res) => {
 app.post("/register", (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
-  const id = generateRandomString();
+
   if (!email || !password) {
-    res.statusCode = 400;
-    res.send('400: invalid email or password');
-  } else {
-    users[id] = { id, email, password };
-    res.cookie('user_id', id);
-    res.redirect('/urls');
+    res.statusCode = 403;
+    res.send('403: email or password missing');
+    return;
   }
+  console.log("Email is:", email);
+  const user = findUserByEmail(email);
+  if (user) {
+    res.statusCode = 400;
+    res.send('400: user already exists');
+    return;
+  }
+
+  const id = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  users[id] = { id, email, password: hashedPassword };
+  res.cookie('user_id', id);
+  res.redirect('/urls');
+  console.log(users);
 });
 
 
@@ -121,17 +153,30 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = users[findUserByEmail(email)];
+  if (!email || !password) {
+    res.statusCode = 403;
+    res.send('403: email or password missing');
+    return;
+  }
+
+  const user = findUserByEmail(email);
+  console.log(user);
   if (!user) {
     res.statusCode = 403;
     res.send('403: email address does not match any existing user');
-  } else if (password !== user.password) {
+    return;
+  }
+
+  if (!bcrypt.compareSync(password, user.password)) {
     res.statusCode = 403;
     res.send('403: password incorrect');
-  } else {
-    res.cookie('user_id', user.id);
-    res.redirect('/urls');
+    return;
   }
+
+
+  res.cookie('user_id', user.id);
+  res.redirect('/urls');
+
 });
 
 app.post("/logout", (req, res) => {
