@@ -1,30 +1,42 @@
+//const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const cookieSession = require('cookie-session')
 const { response } = require('express');
 const bcrypt = require('bcrypt');
-//const { response } = require("express");
+
 const PORT = 8080; // default port 8080
 
 //set the view engine to ejs
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', "key2"]
 }));
 
 
-const findUserByEmail = (email) => {
+// const findUserByEmail = (email) => {
 
-  const keys = Object.keys(users)
+//   const keys = Object.keys(userDatabase)
+//   for (let id of keys) {
+//     const user = userDatabase[id];
+//     if (user.email === email) {
+//       return user;
+//     }
+//   }
+// };
+
+const findUserByEmail = (database, email) => {
+
+  const keys = Object.keys(database)
   for (let id of keys) {
-    const user = users[id];
+    const user = database[id];
     if (user.email === email) {
+      console.log(user)
       return user;
     }
   }
@@ -53,7 +65,7 @@ const urlDatabase = {
   i3Bgrr: { longURL: "https://www.google.ca", userID: "jennyc" }
 };
 
-const users = {
+const userDatabase = {
   xnidg9:
   {
     id: 'xnidg9',
@@ -68,13 +80,13 @@ const users = {
 //GET requests
 
 app.get("/register", (req, res) => {
-  const user = users[req.session.user_id];
+  const user = userDatabase[req.session.user_id];
   let templateVars = { user };
   res.render("register", templateVars);
 });
 
 app.get('/login', (req, res) => {
-  const user = users[req.session.user_id];
+  const user = userDatabase[req.session.user_id];
   let templateVars = { user };
   res.render('login', templateVars);
 });
@@ -85,9 +97,8 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const user = users[req.session.user_id];
-  let templateVars = { user };
-  // console.log(req);  
+  const user = userDatabase[req.session.user_id];
+  let templateVars = { user }; // console.log(req); 
   if ((req.session.user_id === null) || (req.session.user_id === undefined)) {
     res.redirect('/login')
   } else {
@@ -98,13 +109,13 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[req.params.shortURL];
-  const user = users[req.session.user_id];
+  const user = userDatabase[req.session.user_id];
   let templateVars = { user, shortURL, longURL };
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  const user = users[req.session.user_id];
+  const user = userDatabase[req.session.user_id];
   const userURLS = urlsForUser(req.session.user_id)
   //console.log("This is userURLS: ", userURLS);
   let templateVars = { user, urls: userURLS };
@@ -130,8 +141,8 @@ app.post("/register", (req, res) => {
     res.send('403: email or password missing');
     return;
   }
-  console.log("Email is:", email);
-  const user = findUserByEmail(email);
+  // console.log("Email is:", email);
+  const user = findUserByEmail(userDatabase, email);
   if (user) {
     res.statusCode = 400;
     res.send('400: user already exists');
@@ -141,10 +152,10 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  users[id] = { id, email, password: hashedPassword };
-  res.session('user_id', id);
+  userDatabase[id] = { id, email, password: hashedPassword };
+  res.cookie('user_id', id);
   res.redirect('/urls');
-  console.log(users);
+  console.log(userDatabase);
 });
 
 
@@ -164,22 +175,24 @@ app.post("/login", (req, res) => {
     return;
   }
 
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(userDatabase, email);
   //console.log(user);
   if (!user) {
     res.statusCode = 403;
     res.send('403: email address does not match any existing user');
     return;
   }
-
+  console.log("Password:", password, "user:", user)
   if (!bcrypt.compareSync(password, user.password)) {
+
     res.statusCode = 403;
     res.send('403: password incorrect');
+
     return;
   }
 
 
-  res.cookie('user_id', user.id);
+  req.session.user_id = user.id;
   res.redirect('/urls');
 
 });
