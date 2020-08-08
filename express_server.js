@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-//const { response } = require('express');
 const bcrypt = require('bcrypt');
 const PORT = 8080;
 
@@ -50,7 +49,7 @@ app.get('/login', (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -83,9 +82,9 @@ app.get("/", (req, res) => {
   res.send('/urls');
 });
 
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
 
 // POST requests
 
@@ -112,11 +111,8 @@ app.post("/register", (req, res) => {
   userDatabase[id] = { id, email, password: hashedPassword };
   req.session.user_id = id;
   res.redirect('/urls');
-  // console.log(userDatabase);
 
 });
-
-
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
@@ -130,7 +126,7 @@ app.post("/login", (req, res) => {
   const user = findUserByEmail(userDatabase, email);
   if (!user) {
     res.statusCode = 403;
-    res.send('403: email address does not match any existing user');
+    res.send('403: email address does not match any existing user. Please register.');
     return;
   }
 
@@ -164,17 +160,33 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
+
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session["user_id"] };
-  res.redirect('/urls/' + shortURL);
+  if (!req.session.user_id) {
+    res.statusCode = 401;
+    req.session.user_id = null;
+    res.send("401 Error. Unauthorized. Please login.");
+    return;
+
+  } else {
+    urlDatabase[shortURL] = { longURL: req.body.longURL, userID: req.session["user_id"] };
+    res.redirect('/urls/' + shortURL);
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  urlDatabase[shortURL].longURL = req.body.updateURL;
+  if (!req.session.user_id) {
+    res.statusCode = 401;
+    req.session.user_id = null;
+    res.send("401 Error. Unauthorized. Please login.");
+    return;
 
-  res.redirect('/urls/' + shortURL);
+  } else {
+    urlDatabase[shortURL].longURL = req.body.updateURL;
+    res.redirect('/urls/' + shortURL);
+  }
 });
 
 // LISTEN requests
