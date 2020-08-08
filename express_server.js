@@ -1,8 +1,8 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const cookieSession = require('cookie-session')
-const { response } = require('express');
+const cookieSession = require('cookie-session');
+//const { response } = require('express');
 const bcrypt = require('bcrypt');
 const PORT = 8080;
 
@@ -49,14 +49,16 @@ app.get('/login', (req, res) => {
 
 
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL].longURL;
+  res.redirect(longURL);
 });
 
 app.get("/urls/new", (req, res) => {
   const user = userDatabase[req.session.user_id];
   let templateVars = { user };
   if ((req.session.user_id === null) || (req.session.user_id === undefined)) {
-    res.redirect('/login')
+    res.redirect('/login');
   } else {
     res.render("urls_new", templateVars);
   }
@@ -64,26 +66,26 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[req.params.shortURL];
+  const urlRecord = urlDatabase[req.params.shortURL];
   const user = userDatabase[req.session.user_id];
-  let templateVars = { user, shortURL, longURL };
+  let templateVars = { user, shortURL, longURL: urlRecord.longURL };
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls", (req, res) => {
   const user = userDatabase[req.session.user_id];
-  const userURLS = urlsForUser(req.session.user_id)
+  const userURLS = urlsForUser(req.session.user_id, urlDatabase);
   let templateVars = { user, urls: userURLS };
   res.render("urls_index", templateVars);
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send('/urls');
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
 
 // POST requests
 
@@ -92,8 +94,8 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
 
   if (!email || !password) {
-    res.statusCode = 403;
-    res.send('403: email or password missing');
+    res.statusCode = 400;
+    res.send('400: email or password missing');
     return;
   }
 
@@ -108,25 +110,20 @@ app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   userDatabase[id] = { id, email, password: hashedPassword };
-  res.cookie('user_id', id);
+  req.session.user_id = id;
   res.redirect('/urls');
-  console.log(userDatabase);
+  // console.log(userDatabase);
+
 });
 
 
-app.post("/urls/:id", (req, res) => {
-  const shortURL = req.params.id;
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect('/urls');
-
-});
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
-    res.statusCode = 403;
-    res.send('403: email or password missing');
+    res.statusCode = 400;
+    res.send('400: email or password missing');
     return;
   }
 
@@ -136,7 +133,7 @@ app.post("/login", (req, res) => {
     res.send('403: email address does not match any existing user');
     return;
   }
-  console.log("Password:", password, "user:", user)
+
   if (!bcrypt.compareSync(password, user.password)) {
 
     res.statusCode = 403;
@@ -156,6 +153,7 @@ app.post("/logout", (req, res) => {
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
   if (req.session.user_id && req.session.user_id === urlDatabase[shortURL].userID) {
     delete (urlDatabase[shortURL]);
     res.redirect('/urls');
@@ -174,7 +172,8 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  urlDatabase[shortURL].longURL = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.updateURL;
+
   res.redirect('/urls/' + shortURL);
 });
 
