@@ -98,7 +98,7 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  const user = findUserByEmail(userDatabase, email);
+  const user = findUserByEmail(userDatabase, email); // checking if user already registered if so, error
   if (user) {
     res.statusCode = 400;
     res.send('400: user already exists');
@@ -108,7 +108,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  userDatabase[id] = { id, email, password: hashedPassword };
+  userDatabase[id] = { id, email, password: hashedPassword }; // new user obj
   req.session.user_id = id;
   res.redirect('/urls');
 
