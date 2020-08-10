@@ -20,15 +20,12 @@ const testUsers = {
   }
 };
 
-
-
 describe('findUserByEmail', () => {
   it('should return a user with valid email', () => {
     const user = findUserByEmail(testUsers, "user@example.com");
     const expectedOutput = "userRandomID";
     assert.equal(user.id, expectedOutput);
   });
-
 
   it('should return undefined if no user found with given email', () => {
     const user = findUserByEmail(testUsers, "no_a_user@example.com");
