@@ -9,7 +9,6 @@ const findUserByEmail = (database, email) => {
   }
 };
 
-
 const urlsForUser = (id, urlDatabase) => {
   let result = {};
   for (let shortURL in urlDatabase) {
@@ -23,7 +22,6 @@ const urlsForUser = (id, urlDatabase) => {
 function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
 };
-
 
 module.exports = {
   findUserByEmail,
