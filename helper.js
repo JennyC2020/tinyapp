@@ -1,5 +1,3 @@
-// findUserByEmail
-
 const findUserByEmail = (database, email) => {
 
   const keys = Object.keys(database);
@@ -11,7 +9,7 @@ const findUserByEmail = (database, email) => {
   }
 };
 
-// urlsForUser
+
 const urlsForUser = (id, urlDatabase) => {
   let result = {};
   for (let shortURL in urlDatabase) {
@@ -21,11 +19,10 @@ const urlsForUser = (id, urlDatabase) => {
   }
   return result;
 };
-// generateRandomString
+
 function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
 };
-
 
 
 module.exports = {
