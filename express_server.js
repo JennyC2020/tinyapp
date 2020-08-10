@@ -31,7 +31,6 @@ const userDatabase = {
   }
 };
 
-
 //GET requests
 
 app.get("/register", (req, res) => {
@@ -45,7 +44,6 @@ app.get('/login', (req, res) => {
   let templateVars = { user };
   res.render('login', templateVars);
 });
-
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -147,7 +145,6 @@ app.post("/logout", (req, res) => {
   res.redirect('/login');
 });
 
-
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   if (req.session.user_id && req.session.user_id === urlDatabase[shortURL].userID) {
@@ -159,7 +156,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.send("401 Error. Unauthorized. Please login.");
   }
 });
-
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
