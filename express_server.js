@@ -44,11 +44,19 @@ app.get('/login', (req, res) => {
   let templateVars = { user };
   res.render('login', templateVars);
 });
+// Issue to fix:  doesn't return a relevant error message when the id doesn't exist
+//please review code.
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  const user = userDatabase[req.session.user_id];
+  if (user) {
+    res.redirect(longURL);
+  } else {
+    res.send('User not found in database. Please register--> <a href="/register">REGISTER HERE</a>')
+    res.redirect('/register');
+  }
 });
 
 app.get("/urls/new", (req, res) => {
@@ -61,23 +69,52 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// Issue to fix -unauthorized users are able to view this page instead of being shown a relevant HTML message
+//code modified. Please review
+
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlRecord = urlDatabase[req.params.shortURL];
   const user = userDatabase[req.session.user_id];
   let templateVars = { user, shortURL, longURL: urlRecord.longURL };
-  res.render("urls_show", templateVars);
+  if (user) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>')
+    res.redirect('/login');
+  }
 });
+// Issue to fix - users who are not logged in are able to access this page instead
+// of being shown a relevant HTML message
+//code modified. Please review
 
 app.get("/urls", (req, res) => {
   const user = userDatabase[req.session.user_id];
   const userURLS = urlsForUser(req.session.user_id, urlDatabase);
   let templateVars = { user, urls: userURLS };
-  res.render("urls_index", templateVars);
+
+  if (user) {
+    res.render("urls_index", templateVars);
+  } else {
+    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>')
+    res.redirect('/login');
+  }
 });
 
+
+//Issue to fix-  if user is logged in: (Minor) redirect to /urls,
+//if user is not logged in: (Minor) redirect to /login - the page just displays /urls instead
+// of redirecting the user
+//code modified. Please review
+
 app.get("/", (req, res) => {
-  res.send('/urls');
+  const user = userDatabase[req.session.user_id];
+  if (user) {
+    res.redirect('/urls');
+  } else {
+    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>')
+    res.redirect('/login');
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -141,7 +178,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session = null;
+  req.session.user_id = null;
   res.redirect('/login');
 });
 
@@ -170,7 +207,8 @@ app.post("/urls", (req, res) => {
     res.redirect('/urls/' + shortURL);
   }
 });
-
+//Issue to fix: unauthorized users are able to make changes to urls that don't belong to them. 
+//Code below not working
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   if (!req.session.user_id) {
