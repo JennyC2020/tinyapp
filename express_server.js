@@ -54,7 +54,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (user) {
     res.redirect(longURL);
   } else {
-    res.send('User not found in database. Please register--> <a href="/register">REGISTER HERE</a>')
+    res.send('User not found in database. Please register--> <a href="/register">REGISTER HERE</a>');
     res.redirect('/register');
   }
 });
@@ -80,7 +80,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (user) {
     res.render("urls_show", templateVars);
   } else {
-    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>')
+    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>');
     res.redirect('/login');
   }
 });
@@ -96,7 +96,7 @@ app.get("/urls", (req, res) => {
   if (user) {
     res.render("urls_index", templateVars);
   } else {
-    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>')
+    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>');
     res.redirect('/login');
   }
 });
@@ -112,7 +112,7 @@ app.get("/", (req, res) => {
   if (user) {
     res.redirect('/urls');
   } else {
-    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>')
+    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>');
     res.redirect('/login');
   }
 });
@@ -161,7 +161,7 @@ app.post("/login", (req, res) => {
   const user = findUserByEmail(userDatabase, email);
   if (!user) {
     res.statusCode = 403;
-    res.send('403: email address does not match any existing user. Please register.');
+    res.send('403: email address does not match any existing user. Please register--> <a href="/register">REGISTER HERE</a>');
     return;
   }
 
@@ -190,7 +190,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   } else {
     res.statusCode = 401;
     req.session.user_id = null;
-    res.send("401 Error. Unauthorized. Please login.");
+    res.send('401 Error. Unauthorized. --> <a href="/login">LOGIN HERE</a>');
   }
 });
 
@@ -199,7 +199,7 @@ app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
     res.statusCode = 401;
     req.session.user_id = null;
-    res.send("401 Error. Unauthorized. Please login.");
+    res.send('401 Error. Unauthorized. --> <a href="/login">LOGIN HERE</a>');
     return;
 
   } else {
@@ -207,14 +207,14 @@ app.post("/urls", (req, res) => {
     res.redirect('/urls/' + shortURL);
   }
 });
-//Issue to fix: unauthorized users are able to make changes to urls that don't belong to them. 
+//Issue to fix: unauthorized users are able to make changes to urls that don't belong to them.
 //Code below not working
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   if (!req.session.user_id) {
     res.statusCode = 401;
     req.session.user_id = null;
-    res.send("401 Error. Unauthorized. Please login.");
+    res.send('401 Error. Unauthorized. --> <a href="/login">LOGIN HERE</a>');
     return;
 
   } else {
