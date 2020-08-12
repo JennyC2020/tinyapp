@@ -44,8 +44,6 @@ app.get('/login', (req, res) => {
   let templateVars = { user };
   res.render('login', templateVars);
 });
-// Issue to fix:  doesn't return a relevant error message when the id doesn't exist
-//please review code.
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -55,7 +53,6 @@ app.get("/u/:shortURL", (req, res) => {
     res.redirect(longURL);
   } else {
     res.send('User not found in database. Please register--> <a href="/register">REGISTER HERE</a>');
-    res.redirect('/register');
   }
 });
 
@@ -69,9 +66,6 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-// Issue to fix -unauthorized users are able to view this page instead of being shown a relevant HTML message
-//code modified. Please review
-
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlRecord = urlDatabase[req.params.shortURL];
@@ -81,12 +75,17 @@ app.get("/urls/:shortURL", (req, res) => {
     res.render("urls_show", templateVars);
   } else {
     res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>');
-    res.redirect('/login');
   }
 });
-// Issue to fix - users who are not logged in are able to access this page instead
-// of being shown a relevant HTML message
-//code modified. Please review
+
+app.get("/", (req, res) => {
+  const user = userDatabase[req.session.user_id];
+  if (!user) {
+    res.redirect('/login');
+  } else {
+    res.redirect('/urls');
+  }
+});
 
 app.get("/urls", (req, res) => {
   const user = userDatabase[req.session.user_id];
@@ -97,23 +96,6 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
   } else {
     res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>');
-    res.redirect('/login');
-  }
-});
-
-
-//Issue to fix-  if user is logged in: (Minor) redirect to /urls,
-//if user is not logged in: (Minor) redirect to /login - the page just displays /urls instead
-// of redirecting the user
-//code modified. Please review
-
-app.get("/", (req, res) => {
-  const user = userDatabase[req.session.user_id];
-  if (user) {
-    res.redirect('/urls');
-  } else {
-    res.send('Please login to access this page--> <a href="/login">LOGIN HERE</a>');
-    res.redirect('/login');
   }
 });
 
@@ -143,7 +125,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  userDatabase[id] = { id, email, password: hashedPassword }; // new user obj
+  userDatabase[id] = { id, email, password: hashedPassword };
   req.session.user_id = id;
   res.redirect('/urls');
 
@@ -207,11 +189,11 @@ app.post("/urls", (req, res) => {
     res.redirect('/urls/' + shortURL);
   }
 });
-//Issue to fix: unauthorized users are able to make changes to urls that don't belong to them.
-//Code below not working
+
 app.post("/urls/:shortURL", (req, res) => {
+  const user = userDatabase[req.session.user_id];
   let shortURL = req.params.shortURL;
-  if (!req.session.user_id) {
+  if (!user) {
     res.statusCode = 401;
     req.session.user_id = null;
     res.send('401 Error. Unauthorized. --> <a href="/login">LOGIN HERE</a>');
